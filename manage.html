@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMB9 SIP Data and Sharing</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one column, header with tabs, three views (dashboard, admin, guide). Navy accent, brass for sample-data marks. */
+:root {
+  --font-anthropic-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-anthropic-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --color-bg: #f3f4f7; --color-panel: #ffffff; --color-fg: #1a2130; --color-fg-muted: #586174;
+  --color-border-line: #dde1e8; --color-ok: #1b7548; --color-warn: #9a5f0c; --color-bad: #bb3030;
+  --accent: #1f3a68; --accent-ink: #ffffff; --accent-soft: #e7ecf5; --brass: #94703c;
+  --cds-font-size-caption: .8125rem; --cds-font-size-body: .9375rem; --cds-font-size-heading: 1.125rem; --cds-font-size-title: 1.75rem;
+  --cds-font-weight-medium: 600;
+  --cds-gap-xs: .25rem; --cds-gap-sm: .5rem; --cds-gap-md: 1rem; --cds-gap-lg: 1.5rem; --cds-gap-xl: 2rem;
+  --cds-pad-xs: .25rem; --cds-pad-sm: .5rem; --cds-pad-md: .75rem; --cds-pad-lg: 1rem; --cds-pad-xl: 1.5rem;
+  --cds-radius: 8px;
+  --cds-chart-muted: #c6cbd4; --cds-chart-grid: #eaecf1; --cds-chart-axis: #b6bcc7; --cds-chart-status-critical: #cf4040;
+  --cds-surface-popover: #ffffff; --cds-border: #d6dbe3; --cds-shadow-popover: 0 6px 20px rgba(20, 28, 45, .14);
+  --cds-text-secondary: #586174; --cds-dur-slow: 300ms; --skeleton: #eaecf1;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #111419; --color-panel: #1a1e26; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b3;
+    --color-border-line: #2b313c; --color-ok: #5cc28f; --color-warn: #e0a84a; --color-bad: #f07373;
+    --accent: #8fb2f0; --accent-ink: #0d1422; --accent-soft: #1c2739; --brass: #d3ac70;
+    --cds-chart-muted: #4a515e; --cds-chart-grid: #252a33; --cds-chart-axis: #4a515e; --cds-chart-status-critical: #f06464;
+    --cds-surface-popover: #222733; --cds-border: #353c48; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .5);
+    --cds-text-secondary: #9aa3b3; --skeleton: #252a33;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --color-bg: #111419; --color-panel: #1a1e26; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b3;
+  --color-border-line: #2b313c; --color-ok: #5cc28f; --color-warn: #e0a84a; --color-bad: #f07373;
+  --accent: #8fb2f0; --accent-ink: #0d1422; --accent-soft: #1c2739; --brass: #d3ac70;
+  --cds-chart-muted: #4a515e; --cds-chart-grid: #252a33; --cds-chart-axis: #4a515e; --cds-chart-status-critical: #f06464;
+  --cds-surface-popover: #222733; --cds-border: #353c48; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .5);
+  --cds-text-secondary: #9aa3b3; --skeleton: #252a33;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px 56px; }
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px; padding: 20px 0 12px; border-bottom: 1px solid var(--color-border-line); margin-bottom: 20px; }
+.brand h1 { font-family: var(--font-anthropic-serif); font-weight: 500; font-size: 1.6rem; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.brand .sub { margin: 2px 0 0; color: var(--color-fg-muted); font-size: .8125rem; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tab { color: var(--color-fg-muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; font-weight: 500; font-size: .9375rem; }
+.tab:hover { color: var(--color-fg); background: var(--accent-soft); }
+.tab[aria-current="page"] { color: var(--color-fg); background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
+.statusbar { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { font-size: .8125rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); background: var(--color-panel); }
+.pill::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; background: var(--color-fg-muted); }
+.pill[data-kind="ok"]::before { background: var(--color-ok); }
+.pill[data-kind="warn"]::before { background: var(--color-warn); }
+.pill[data-kind="bad"]::before { background: var(--color-bad); }
+.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 14px; border: 1px solid var(--color-border-line); border-left: 4px solid var(--brass); background: var(--color-panel); border-radius: 8px; margin-bottom: 16px; font-size: .875rem; }
+.banner[hidden] { display: none; }
+.btn { font: inherit; font-size: .875rem; font-weight: 500; color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 8px; padding: 7px 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--color-fg-muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.primary.danger { background: var(--color-bad); border-color: var(--color-bad); color: #fff; }
+.btn.danger-text { color: var(--color-bad); }
+.btn.small { padding: 4px 10px; font-size: .8125rem; }
+.btn:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+.btn[hidden] { display: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.muted { color: var(--color-fg-muted); }
+.small { font-size: .8125rem; }
+.grow { flex: 1; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.view[hidden] { display: none; }
+.sip .view-title { font-family: var(--font-anthropic-serif); font-weight: 500; font-size: 1.35rem; margin: 0; }
+.dash-skeleton { background: var(--skeleton); border-radius: var(--cds-radius); }
+.empty { max-width: 680px; padding: 28px; }
+.empty h2 { margin: 0 0 6px; font-family: var(--font-anthropic-serif); font-weight: 500; }
+.empty p { margin: 0; max-width: 60ch; }
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.adm-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.seg { display: flex; flex-wrap: wrap; gap: 3px; padding: 3px; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 10px; }
+.seg button { font: inherit; font-size: .875rem; font-weight: 500; border: 0; background: transparent; color: var(--color-fg-muted); padding: 6px 12px; border-radius: 7px; cursor: pointer; }
+.seg button:hover { color: var(--color-fg); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg .n { font-variant-numeric: tabular-nums; opacity: .8; margin-left: 4px; font-weight: 400; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tools input[type="search"] { font: inherit; font-size: .875rem; padding: 7px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background: var(--color-panel); color: var(--color-fg); width: 15rem; max-width: 100%; }
+#sheet-purpose { margin: 6px 0 4px; font-size: .875rem; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; font-size: .8125rem; }
+.chip { font: inherit; font-size: .8125rem; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.chip.warn b { color: var(--color-warn); }
+.chip.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.chip[hidden] { display: none; }
+#issue-chip { margin-bottom: 8px; }
+.ok-line { color: var(--color-ok); margin: 0; }
+.card.tbl-card { padding: 0; gap: 0; overflow: hidden; }
+.tbl-scroll { overflow: auto; }
+.tbl-scroll.tall { max-height: min(64vh, 640px); }
+.grid-tbl { border-collapse: collapse; width: 100%; font-size: .8125rem; font-variant-numeric: tabular-nums; }
+.grid-tbl th { position: sticky; top: 0; background: var(--color-panel); text-align: left; border-bottom: 1px solid var(--color-border-line); padding: 0; white-space: nowrap; z-index: 1; }
+.th-btn { font: inherit; font-weight: 600; color: var(--color-fg-muted); background: none; border: 0; padding: 8px 10px; cursor: pointer; width: 100%; text-align: inherit; }
+.th-btn:hover { color: var(--color-fg); }
+.grid-tbl td { padding: 7px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.grid-tbl tbody tr { cursor: pointer; }
+.grid-tbl tbody tr:hover, .grid-tbl tbody tr:focus-visible { background: var(--accent-soft); outline: none; }
+.grid-tbl .num { text-align: right; }
+.grid-tbl td.bad { color: var(--color-bad); }
+.badge { margin-left: 6px; font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em; color: var(--brass); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; }
+#table-note { padding: 8px 12px; margin: 0; border-top: 1px solid var(--color-border-line); }
+.adm-foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.modal { position: fixed; inset: 0; background: rgba(10, 14, 22, .45); display: grid; place-items: center; padding: 16px; z-index: 50; }
+.modal[hidden] { display: none; }
+.modal-panel { background: var(--color-panel); color: var(--color-fg); border-radius: 12px; border: 1px solid var(--color-border-line); width: min(780px, 100%); max-height: calc(100% - 32px); overflow: auto; padding: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, .28); }
+.dlg h2, .editor h2 { margin: 0 0 8px; font-size: 1.125rem; }
+.dlg p { margin: 0 0 8px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: 12px 16px; margin: 12px 0; }
+.fld { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.fld.wide { grid-column: span 2; }
+@media (max-width: 520px) { .fld.wide { grid-column: auto; } }
+.fld label { font-size: .8125rem; font-weight: 600; }
+.fld .req { color: var(--color-bad); }
+.fld input, .fld select { font: inherit; font-size: .875rem; padding: 7px 9px; border: 1px solid var(--color-border-line); border-radius: 7px; background: var(--color-bg); color: var(--color-fg); width: 100%; min-width: 0; }
+.fld input[readonly] { opacity: .7; }
+.fld [aria-invalid="true"] { border-color: var(--color-bad); }
+.hint { color: var(--color-fg-muted); font-size: .75rem; }
+.err { color: var(--color-bad); font-size: .75rem; }
+.err:empty { display: none; }
+.err-line { color: var(--color-bad); font-size: .8125rem; margin: 6px 0; }
+.err-line:empty { display: none; }
+.dlg-actions { display: flex; gap: 8px; align-items: center; margin-top: 16px; flex-wrap: wrap; justify-content: flex-end; }
+.plan { border-top: 1px solid var(--color-border-line); padding: 10px 0; }
+.plan h3 { margin: 0 0 4px; font-size: .9375rem; }
+.plan p { margin: 2px 0; font-size: .875rem; }
+.plan details { font-size: .8125rem; color: var(--color-fg-muted); margin-top: 4px; }
+.plan ul { margin: 6px 0; padding-left: 18px; max-height: 12rem; overflow: auto; }
+.check { display: flex; gap: 8px; align-items: center; font-size: .875rem; margin-top: 8px; }
+.progress { height: 8px; background: var(--color-border-line); border-radius: 99px; overflow: hidden; margin: 12px 0 6px; }
+.bar-in { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.result p { margin: 4px 0; font-size: .875rem; }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--color-fg); color: var(--color-bg); padding: 10px 16px; border-radius: 8px; font-size: .875rem; z-index: 60; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0, 0, 0, .2); }
+.toast[hidden] { display: none; }
+.toast[data-kind="bad"] { background: var(--color-bad); color: #fff; }
+.prose { max-width: 82ch; }
+.prose h2 { font-size: 1.125rem; margin: 0 0 6px; }
+.prose h2 + p { margin-top: 0; }
+.prose p, .prose ol { margin: 0 0 12px; }
+.prose ol { padding-left: 20px; }
+.guide-grid { display: grid; gap: 16px; margin-top: 16px; }
+.guide h3 { margin: 0; font-size: 1rem; }
+.guide p { margin: 0; font-size: .875rem; }
+table.plain { border-collapse: collapse; font-size: .8125rem; width: 100%; min-width: 760px; }
+table.plain th { text-align: left; color: var(--color-fg-muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); }
+table.plain td { padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+code { font-family: var(--font-mono); font-size: .8125rem; }
+@media (prefers-reduced-motion: reduce) { .bar-in { transition: none; } }
+
+  .sip { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: grid; gap: var(--cds-gap-lg); }
+  .sip h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .sip h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-sm) 0 0; text-wrap: balance; }
+  .sip h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .sip p { margin: 0; }
+  .sip-head { display: grid; gap: var(--cds-gap-sm); }
+  .sip-take { font-size: var(--cds-font-size-body); max-width: 72ch; }
+  .sip .sip-take b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .sip-sample { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-left: 3px solid var(--color-warn); padding-left: var(--cds-pad-sm); max-width: 72ch; }
+  .sip-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-sm) var(--cds-gap-md); }
+  .sip-filters label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: var(--cds-gap-xs); }
+  .sip-filters select, .sip-reset { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); }
+  .sip-reset { cursor: pointer; }
+  .sip-reset:hover { border-color: var(--color-fg-muted); }
+  .sip :focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .sip-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+  .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+  .tile .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .tile .big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .tile .of { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); }
+  .tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .tile.whole { border-style: dashed; }
+  .tag { font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 0 var(--cds-pad-sm); color: var(--color-fg-muted); width: fit-content; }
+  .card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-xs) var(--cds-gap-sm); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+  .fn { display: grid; gap: var(--cds-gap-sm); }
+  .fn-row { display: grid; grid-template-columns: minmax(6rem, 8.5rem) 1fr; gap: var(--cds-gap-xs) var(--cds-gap-sm); align-items: center; }
+  .fn-label { font-size: var(--cds-font-size-caption); }
+  .fn-rate { grid-column: 2; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .bar { display: flex; align-items: center; gap: var(--cds-gap-sm); min-height: 1.5rem; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .track { flex: 1 1 auto; display: flex; min-width: 0; }
+  .bar-fill { height: 1.25rem; border-radius: var(--cds-radius); min-width: 2px; }
+  .bar-val { min-width: 2.5rem; text-align: right; }
+  .chart { position: relative; min-height: 13.75rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .35rem; vertical-align: -1px; }
+  .sw-muted { background: var(--cds-chart-muted); }
+  .tip { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
+  .tip .t-h { color: var(--cds-text-secondary); }
+  .tip[hidden] { display: none; }
+  .donut { display: flex; flex-wrap: wrap; gap: var(--cds-gap-lg); align-items: center; min-height: 11rem; }
+  .donut-svg { flex: 0 0 auto; width: 9.5rem; }
+  .dl { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); flex: 1 1 12rem; font-variant-numeric: tabular-nums; }
+  .dl-row { display: grid; grid-template-columns: auto 1fr auto 3rem; gap: var(--cds-gap-sm); align-items: center; }
+  .dl-row .n, .dl-row .s { text-align: right; }
+  .dl-row .s { color: var(--color-fg-muted); }
+  .dl-row.zero { color: var(--color-fg-muted); }
+  .dg { display: grid; gap: var(--cds-gap-sm); min-height: 11rem; }
+  .dg-row { display: grid; grid-template-columns: minmax(5rem, 7rem) 1fr; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); }
+  .dg-row.dim { opacity: .45; }
+  .dg-bars { display: grid; gap: 3px; }
+  .dg-bars .bar { min-height: 0; }
+  .dg-bars .bar-fill { height: .7rem; }
+  .tbl-box { overflow: auto; max-height: 21rem; }
+  .sip table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .sip th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); position: sticky; top: 0; background: var(--color-panel); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .sip td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .sip .num { text-align: right; }
+  .defs { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 80ch; }
+  .defs b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+
+.setup { max-width: 760px; padding: 24px; }
+.setup h2, .share h2 { margin: 0 0 6px; font-family: var(--font-anthropic-serif); font-weight: 500; font-size: 1.3rem; }
+.setup ol { margin: 8px 0 16px; padding-left: 20px; display: grid; gap: 6px; }
+.setup form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.setup label { display: grid; gap: 4px; font-size: .8125rem; font-weight: 600; flex: 1 1 22rem; }
+.setup input, .copy-row input { font: inherit; font-size: .875rem; padding: 8px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background: var(--color-bg); color: var(--color-fg); width: 100%; min-width: 0; }
+.share { max-width: 760px; margin-bottom: 16px; border-left: 4px solid var(--color-ok); }
+.share[hidden], .setup[hidden], .need-sheet[hidden] { display: none; }
+.copy-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.copy-row input { flex: 1 1 18rem; }
+.head-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.issues-card { margin-top: 24px; }
+.issues-card summary { cursor: pointer; font-weight: 600; }
+.issues-card summary .muted { font-weight: 400; margin-left: 6px; }
+ul.issues { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: .875rem; }
+.top .statusbar { margin-left: 0; }
+.top .head-actions { margin-left: auto; }
+
+.steps { display: grid; gap: 16px; max-width: 860px; }
+.step { padding: 22px; gap: 10px; }
+.step h2 { margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 10px; }
+.step h3 { margin: 10px 0 0; font-size: .9375rem; }
+.num { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: .8125rem; font-weight: 600; flex: none; }
+.step p { margin: 0; }
+.how { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.how a, .step a:not(.btn) { color: var(--accent); }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.inline-form label { display: grid; gap: 4px; font-size: .8125rem; font-weight: 600; flex: 1 1 22rem; }
+.inline-form input { font: inherit; font-size: .875rem; padding: 8px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background: var(--color-bg); color: var(--color-fg); width: 100%; min-width: 0; }
+.warn-line { color: var(--color-warn); font-size: .875rem; border-left: 3px solid var(--color-warn); padding-left: 10px; }
+.tab-list { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: .875rem; }
+.tab-list li.bad { color: var(--color-bad); }
+.sub-details { font-size: .875rem; }
+.sub-details summary { cursor: pointer; color: var(--color-fg-muted); }
+.sub-details > div, .sub-details > p { margin-top: 8px; }
+#connected { display: grid; gap: 16px; }
+.landing-empty { max-width: 640px; }
+.steps .prose { max-width: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="config.js"></script>
+<script>
+window.SIP_SPEC = {"lists": {"domain": ["Consulting", "Product", "Marketing", "Finance", "Operations", "Analytics", "HR"], "sector": ["IT/ITES", "BFSI", "Consulting", "FMCG", "E-commerce", "GCC", "Manufacturing", "Other"], "source": ["Placecom outreach", "GL-converted", "Alumni referral", "Cohort network lead", "Case competition", "Self-sourced"], "recruiter_type": ["New", "Repeat"], "stage": ["Contacted", "JD received", "Process running", "Process closed", "Dropped", "Self-sourced"], "next_step": ["Applications close", "Group discussion", "Interviews", "Results due"], "yes_no": ["Yes", "No"], "stage_reached": ["Applied", "Shortlisted", "Offered", "Accepted"]}, "sheets": [{"id": "companies", "title": "Companies", "key": "company_id", "grouped": false, "purpose": "One row per company the committee is working with for SIP, plus one row per self-sourced SIP.", "cols": [{"key": "company_id", "label": "Company ID", "type": "id", "means": "Unique code for the company. Never reuse a code.", "format": "Text, e.g. C001", "where": "You assign it when the company is first added", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "C001"}, {"key": "company", "label": "Company", "type": "text", "means": "Company name as it should appear on the dashboard.", "format": "Text", "where": "Outreach Analyzer, Company Master sheet", "who": "Corporate Relations / Alumni Relations", "required": true, "list": null, "strict": true, "example": "Acme Analytics"}, {"key": "sector", "label": "Sector", "type": "select", "means": "Industry the company belongs to.", "format": "Pick from list", "where": "Company website or Outreach Analyzer", "who": "Corporate Relations", "required": false, "list": "sector", "strict": false, "example": "GCC"}, {"key": "domain", "label": "Domain", "type": "select", "means": "Main domain of the SIP role.", "format": "Pick from list", "where": "The JD", "who": "Placecom owner", "required": true, "list": "domain", "strict": false, "example": "Consulting"}, {"key": "roles", "label": "Roles", "type": "text", "means": "Role titles offered in the JD.", "format": "Text", "where": "The JD", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "Business Analyst Intern"}, {"key": "company_spoc", "label": "Company SPOC", "type": "text", "means": "Designation of the company-side contact. No personal phone numbers or emails here.", "format": "Text, e.g. Campus Hiring Lead", "where": "Outreach Analyzer, POC List sheet", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "Campus Hiring Lead"}, {"key": "placecom_owner", "label": "Placecom owner", "type": "owner", "means": "Committee member who handles this company. Use Student-led for self-sourced and case competition SIPs.", "format": "First name, spelt the same way every time", "where": "Placecom company allocation", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "Riya"}, {"key": "source", "label": "Source", "type": "select", "means": "How the company came in. Drives the \"Where SIPs came from\" chart.", "format": "Pick from list", "where": "Outreach Analyzer lead source, the cohort network-lead register, or the guest lecture tracker", "who": "Placecom owner", "required": true, "list": "source", "strict": true, "example": "Placecom outreach"}, {"key": "recruiter_type", "label": "New or repeat", "type": "select", "means": "New: has never recruited from the IMB before. Repeat: has.", "format": "New or Repeat", "where": "Past IMB placement reports or the CDS recruiter list", "who": "Strategy & Operations with CDS", "required": false, "list": "recruiter_type", "strict": true, "example": "New"}, {"key": "stage", "label": "Stage", "type": "select", "means": "Where the company is now in the SIP process.", "format": "Pick from list", "where": "Outreach Analyzer Meeting Tracker, and the Infylearn drive status", "who": "Placecom owner", "required": true, "list": "stage", "strict": true, "example": "JD received"}, {"key": "contacted_on", "label": "First contacted", "type": "date", "means": "Date of the first outreach.", "format": "Date (YYYY-MM-DD)", "where": "Outreach Analyzer, Meeting Tracker sheet", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "2026-09-14"}, {"key": "jd_received_on", "label": "JD received", "type": "date", "means": "Date the SIP JD arrived. Leave blank until it does.", "format": "Date (YYYY-MM-DD)", "where": "JD email from the company or CDS", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "2026-09-28"}, {"key": "next_step", "label": "Next step", "type": "select", "means": "The next milestone in the company's process.", "format": "Pick from list", "where": "Company's process schedule or the Infylearn drive", "who": "Placecom owner", "required": false, "list": "next_step", "strict": false, "example": "Applications close"}, {"key": "next_date", "label": "Next date", "type": "date", "means": "Date of the next step.", "format": "Date (YYYY-MM-DD)", "where": "Infylearn drive calendar", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "2026-11-12"}, {"key": "stipend_monthly", "label": "Monthly stipend (INR)", "type": "number", "means": "Monthly stipend in rupees.", "format": "Number only, e.g. 50000", "where": "The JD", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "50000"}, {"key": "location", "label": "Location", "type": "text", "means": "City of the internship.", "format": "Text", "where": "The JD", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "Mumbai"}, {"key": "ppo_possible", "label": "PPO possible", "type": "select", "means": "Whether the SIP can lead to a pre-placement offer.", "format": "Yes or No", "where": "The JD or the company's HR", "who": "Placecom owner", "required": false, "list": "yes_no", "strict": true, "example": "Yes"}]}, {"id": "applications", "title": "Applications", "key": "application_id", "grouped": true, "purpose": "One row per student per company: how far the student got. Self-sourced SIPs are one Accepted row against the self-sourced company row.", "cols": [{"key": "application_id", "label": "Application ID", "type": "id", "means": "Unique code for the application.", "format": "Text, e.g. A0001, or Infylearn's own application ID", "where": "Infylearn export, or assign one", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "A0001"}, {"key": "student_id", "label": "Student ID", "type": "student", "means": "The student's ID, exactly as in the Students sheet.", "format": "Text, e.g. roll number or matricola", "where": "Infylearn export", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "S001"}, {"key": "company_id", "label": "Company ID", "type": "company", "means": "The company's code from the Companies sheet.", "format": "Text, e.g. C001", "where": "Match the Infylearn drive to the Companies sheet", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "C001"}, {"key": "stage_reached", "label": "Furthest stage", "type": "select", "means": "The furthest stage the student reached with this company.", "format": "Applied, Shortlisted, Offered or Accepted", "where": "Infylearn application status, plus offer acceptance from CDS", "who": "Strategy & Operations", "required": true, "list": "stage_reached", "strict": true, "example": "Shortlisted"}, {"key": "applied_on", "label": "Applied on", "type": "date", "means": "Date the student applied.", "format": "Date (YYYY-MM-DD)", "where": "Infylearn export", "who": "Strategy & Operations", "required": false, "list": null, "strict": true, "example": "2026-10-02"}]}, {"id": "students", "title": "Students", "key": "student_id", "grouped": false, "purpose": "One row per student in the batch. IDs only: no names, phone numbers or emails.", "cols": [{"key": "student_id", "label": "Student ID", "type": "id", "means": "The student's ID, used in every other sheet.", "format": "Text, e.g. roll number or matricola", "where": "CDS student list or the Infylearn profile book", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "S001"}, {"key": "preferred_domain", "label": "Preferred domain", "type": "select", "means": "The student's first-choice domain for SIP.", "format": "Pick from list", "where": "Student preference form (Google Form run by the committee)", "who": "Learning & Development", "required": true, "list": "domain", "strict": false, "example": "Product"}, {"key": "opted_in", "label": "Opted in", "type": "select", "means": "Yes if the student is taking part in the SIP process.", "format": "Yes or No", "where": "CDS opt-in list", "who": "Strategy & Operations", "required": true, "list": "yes_no", "strict": true, "example": "Yes"}, {"key": "work_ex_months", "label": "Work experience (months)", "type": "number", "means": "Months of full-time work before the IMB.", "format": "Whole number, 0 for freshers", "where": "IMB9 batch profile or the Infylearn profile book", "who": "Strategy & Operations", "required": false, "list": null, "strict": true, "example": "24"}]}, {"id": "guest_lectures", "title": "Guest lectures", "key": "gl_id", "grouped": false, "purpose": "One row per guest lecture. Add the company to the Companies sheet first so conversion can be tracked.", "cols": [{"key": "gl_id", "label": "GL ID", "type": "id", "means": "Unique code for the guest lecture.", "format": "Text, e.g. GL01", "where": "You assign it", "who": "Strategy & Operations", "required": true, "list": null, "strict": true, "example": "GL01"}, {"key": "company_id", "label": "Company ID", "type": "company", "means": "The company's code from the Companies sheet.", "format": "Text, e.g. C001", "where": "Companies sheet", "who": "Placecom owner", "required": true, "list": null, "strict": true, "example": "C001"}, {"key": "company", "label": "Company", "type": "text", "means": "Company name, for easy reading.", "format": "Text", "where": "Companies sheet", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "Acme Analytics"}, {"key": "held_on", "label": "Held on", "type": "date", "means": "Date of the lecture.", "format": "Date (YYYY-MM-DD)", "where": "Event calendar, or event approvals on the committee platform", "who": "Placecom owner", "required": true, "list": null, "strict": true, "example": "2026-09-10"}, {"key": "placecom_owner", "label": "Placecom owner", "type": "owner", "means": "Committee member who organised it.", "format": "First name, as in Companies", "where": "Event calendar", "who": "Placecom owner", "required": true, "list": null, "strict": true, "example": "Riya"}, {"key": "speaker_role", "label": "Speaker's role", "type": "text", "means": "Speaker's designation. No personal details.", "format": "Text, e.g. Director", "where": "Event brief", "who": "Placecom owner", "required": false, "list": null, "strict": true, "example": "Director"}]}]};
+window.SIP_STATE = { companies: [], applications: [], students: [], guest_lectures: [] };
+window.SIP_LOADED = { companies: false, applications: false, students: false, guest_lectures: false };
+window.SIP_APP_DOCS = new Map();
+(function () {
+  var STATE = window.SIP_STATE, LOADED = window.SIP_LOADED;
+  var calcs = {}, draws = {}, cache = {}, ready = false;
+  var defaults = { owner: 'All', domain: 'All' };
+  var params = Object.assign({}, defaults);
+  function data(id) {
+    if (Object.prototype.hasOwnProperty.call(STATE, id)) return LOADED[id] ? { status: 'ok', data: STATE[id], meta: [] } : { status: 'loading', data: [], meta: [] };
+    if (calcs[id]) {
+      var ins = calcs[id].inputs.map(data);
+      if (ins.some(function (r) { return r.status !== 'ok'; })) return { status: 'loading', data: [], meta: [] };
+      if (!(id in cache)) {
+        try { cache[id] = calcs[id].fn.apply(null, ins.map(function (r) { return r.data; })); }
+        catch (e) { console.error('Calculation ' + id + ' failed', e); cache[id] = []; }
+      }
+      return { status: 'ok', data: cache[id], meta: [] };
+    }
+    return { status: 'missing', data: [], meta: [] };
+  }
+  function run(name) {
+    document.querySelectorAll('[data-draw="' + name + '"]').forEach(function (el) {
+      try { draws[name](el); } catch (e) { console.error('Drawing ' + name + ' failed', e); }
+    });
+  }
+  function runAll() { if (ready) Object.keys(draws).forEach(run); }
+  window.dash = {
+    data: data,
+    colors: ['#2f5fb3', '#d08a3c', '#2e9e74', '#8e5bd0', '#c9a227', '#4fa3c7', '#b5517a', '#7f8c8d'],
+    calc: function (id, o) { calcs[id] = o; },
+    draw: function (name, fn) { draws[name] = fn; if (ready) run(name); },
+    params: function () { return Object.assign({}, params); },
+    setParams: function (p) { params = Object.assign({}, params, p); runAll(); },
+    resetParams: function () { params = Object.assign({}, defaults); runAll(); },
+    invalidate: function () { cache = {}; },
+    runAll: runAll,
+    onData: function () {}, setLink: function () {}, refresh: function () {}
+  };
+  document.addEventListener('DOMContentLoaded', function () { ready = true; runAll(); });
+  var t, lastW = window.innerWidth;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth === lastW) return;
+    lastW = window.innerWidth; clearTimeout(t); t = setTimeout(runAll, 150);
+  });
+})();
+</script>
+<script>(function () {
+  'use strict';
+  const SPEC = window.SIP_SPEC;
+  const STATE = window.SIP_STATE;
+  const LOADED = window.SIP_LOADED;
+  const ID_RE = /^[A-Za-z0-9_\-.~:@+]+$/;
+  const pad = (n) => String(n).padStart(2, '0');
+  const normKey = (x) => String(x == null ? '' : x).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  function idFrom(text) {
+    if (!text) return null;
+    const t = String(text).trim();
+    const m = /\/spreadsheets\/d\/([A-Za-z0-9_-]{20,})/.exec(t) || /^([A-Za-z0-9_-]{20,})$/.exec(t);
+    return m ? m[1] : null;
+  }
+  const configId = () => idFrom(window.SIP_CONFIG && window.SIP_CONFIG.sheet);
+  const paramId = () => idFrom(new URLSearchParams(location.search).get('sheet'));
+  const editUrl = (id) => `https://docs.google.com/spreadsheets/d/${id}/edit`;
+  /* ---------- reading Google Sheets ---------- */
+  function gviz(id, tab, tqx) {
+    return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=${tqx}&headers=1&sheet=${encodeURIComponent(tab)}`;
+  }
+  async function viaCsv(id, tab) {
+    const res = await fetch(gviz(id, tab, 'out:csv') + `&_=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('http ' + res.status);
+    const text = await res.text();
+    if (/^\s*</.test(text)) throw new Error('html');
+    return d3.csvParse(text);
+  }
+  function viaJsonp(id, tab) {
+    return new Promise((resolve, reject) => {
+      const cb = '__sip_' + Math.random().toString(36).slice(2);
+      const s = document.createElement('script');
+      let called = false;
+      const timer = setTimeout(() => done(new Error('timeout')), 15000);
+      function done(err, val) { clearTimeout(timer); try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); if (err) reject(err); else resolve(val); }
+      window[cb] = (resp) => {
+        called = true;
+        if (!resp || resp.status === 'error') {
+          const e = resp && resp.errors && resp.errors[0];
+          return done(new Error((e && (e.detailed_message || e.message)) || 'error'));
+        }
+        const cols = resp.table.cols.map((c) => c.label || c.id);
+        done(null, (resp.table.rows || []).map((r) => {
+          const o = {};
+          cols.forEach((c, i) => { const cell = r.c && r.c[i]; o[c] = cell == null ? '' : cell.f != null ? cell.f : cell.v == null ? '' : cell.v; });
+          return o;
+        }));
+      };
+      s.onerror = () => done(new Error('blocked'));
+      s.onload = () => { setTimeout(() => { if (!called) done(new Error('not shared')); }, 0); };
+      s.src = gviz(id, tab, `out:json;responseHandler:${cb}`) + `&_=${Date.now()}`;
+      document.head.append(s);
+    });
+  }
+  async function loadTab(id, tab) {
+    try { return await viaCsv(id, tab); }
+    catch (e) { return viaJsonp(id, tab); }
+  }
+
+  /* ---------- cleaning rows ---------- */
+  function validDate(iso) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    if (!m) return false;
+    const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+  }
+  function toISODate(v) {
+    const t = String(v == null ? '' : v).trim();
+    if (!t) return '';
+    let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(t);
+    if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+    m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(t);
+    if (m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+    m = /^Date\((\d{4}),(\d{1,2}),(\d{1,2})/.exec(t);
+    if (m) return `${m[1]}-${pad(+m[2] + 1)}-${pad(m[3])}`;
+    return 'INVALID:' + t;
+  }
+  function normValue(col, v) {
+    if (v == null) return '';
+    if (col.type === 'date') return toISODate(v);
+    if (col.type === 'number') {
+      const t = String(v).replace(/[₹,\s]/g, '').replace(/^rs\.?/i, '');
+      if (t === '') return '';
+      const n = Number(t);
+      return Number.isFinite(n) ? n : NaN;
+    }
+    let t = String(v).trim();
+    if (col.list) { const hit = SPEC.lists[col.list].find((o) => o.toLowerCase() === t.toLowerCase()); if (hit) t = hit; }
+    return t;
+  }
+  function validate(s, row) {
+    const e = [];
+    for (const col of s.cols) {
+      const v = row[col.key];
+      const empty = v === '' || v == null;
+      if (col.required && empty) { e.push(`${col.key} is empty`); continue; }
+      if (empty) continue;
+      if (col.type === 'id' && !ID_RE.test(String(v))) e.push(`${col.key} “${v}” has spaces or symbols`);
+      if (col.type === 'date' && !validDate(String(v))) e.push(`${col.key} “${String(v).replace('INVALID:', '')}” is not a date like 2026-11-12`);
+      if (col.type === 'number' && !Number.isFinite(v)) e.push(`${col.key} is not a number`);
+      if (col.type === 'select' && col.strict && !SPEC.lists[col.list].includes(v)) e.push(`${col.key} “${v}” is not one of: ${SPEC.lists[col.list].join(', ')}`);
+    }
+    return e;
+  }
+  function clean(s, records) {
+    const map = {};
+    s.cols.forEach((c) => { map[normKey(c.key)] = c.key; map[normKey(c.label)] = c.key; });
+    const headers = records.columns || Object.keys(records[0] || {});
+    const pick = {};
+    headers.forEach((hd) => { const k = map[normKey(hd)]; if (k && !(k in pick)) pick[k] = hd; });
+    const missing = s.cols.filter((c) => c.required && !(c.key in pick)).map((c) => c.key);
+    const out = [], probs = [], seen = new Map();
+    if (records.length && missing.length) probs.push({ sheet: s.title, text: `Missing column${missing.length > 1 ? 's' : ''} ${missing.join(', ')}. Keep the header row from the template.` });
+    records.forEach((rec, i) => {
+      const line = i + 2;
+      const row = {};
+      s.cols.forEach((c) => { row[c.key] = c.key in pick ? normValue(c, rec[pick[c.key]]) : ''; });
+      const filled = s.cols.some((c) => row[c.key] !== '' && row[c.key] != null);
+      if (!filled) return;
+      if (String(row[s.key]).toUpperCase() === 'EXAMPLE') return;
+      const errs = validate(s, row);
+      if (errs.length) { probs.push({ sheet: s.title, line, text: errs.join('; ') }); return; }
+      if (seen.has(row[s.key])) {
+        probs.push({ sheet: s.title, line, text: `${s.key} ${row[s.key]} is also on row ${seen.get(row[s.key])}; only row ${line} is counted` });
+        out.splice(out.findIndex((r) => r[s.key] === row[s.key]), 1);
+      }
+      seen.set(row[s.key], line);
+      out.push(row);
+    });
+    return { rows: out, probs };
+  }
+  function crossChecks() {
+    const co = new Set(STATE.companies.map((c) => c.company_id));
+    const st = new Set(STATE.students.map((s) => s.student_id));
+    const acc = new Map();
+    STATE.applications.forEach((a) => { if (a.stage_reached === 'Accepted') acc.set(a.student_id, (acc.get(a.student_id) || 0) + 1); });
+    const list = [
+      { sheet: 'Applications', label: 'company not in Companies', rows: STATE.applications.filter((r) => !co.has(r.company_id)), id: 'application_id' },
+      { sheet: 'Applications', label: 'student not in Students', rows: STATE.applications.filter((r) => !st.has(r.student_id)), id: 'application_id' },
+      { sheet: 'Guest lectures', label: 'company not in Companies', rows: STATE.guest_lectures.filter((r) => !co.has(r.company_id)), id: 'gl_id' },
+      { sheet: 'Students', label: 'more than one accepted SIP', rows: STATE.students.filter((r) => (acc.get(r.student_id) || 0) > 1), id: 'student_id' },
+      { sheet: 'Companies', label: 'past Contacted but no JD date', rows: STATE.companies.filter((r) => ['JD received', 'Process running', 'Process closed'].includes(r.stage) && !r.jd_received_on), id: 'company_id' },
+      { sheet: 'Companies', label: 'open process with no next date', rows: STATE.companies.filter((r) => ['JD received', 'Process running'].includes(r.stage) && !r.next_date), id: 'company_id' },
+    ];
+    return list.filter((c) => c.rows.length).map((c) => {
+      const ids = c.rows.map((r) => r[c.id]);
+      return { sheet: c.sheet, text: `${ids.length} with a ${c.label}: ${ids.slice(0, 12).join(', ')}${ids.length > 12 ? ` and ${ids.length - 12} more` : ''}` };
+    });
+  }
+
+
+  /* ---------- load every tab ---------- */
+  async function loadAll(id) {
+    const results = await Promise.allSettled(SPEC.sheets.map((s) => loadTab(id, s.title)));
+    const fails = [];
+    results.forEach((r, i) => { if (r.status === 'rejected') fails.push(SPEC.sheets[i].title); });
+    if (fails.length === SPEC.sheets.length) return { ok: false, fails };
+    const issues = [], tabs = [];
+    results.forEach((r, i) => {
+      const s = SPEC.sheets[i];
+      if (r.status === 'fulfilled') {
+        const c = clean(s, r.value);
+        STATE[s.id] = c.rows;
+        issues.push(...c.probs);
+        tabs.push({ title: s.title, read: true, rows: c.rows.length, problems: c.probs.length });
+      } else {
+        STATE[s.id] = [];
+        issues.push({ sheet: s.title, text: `This tab couldn’t be read. Keep the tab name exactly “${s.title}”.` });
+        tabs.push({ title: s.title, read: false, rows: 0, problems: 1 });
+      }
+      LOADED[s.id] = true;
+    });
+    window.dash.invalidate();
+    return { ok: true, fails, issues, tabs, loadedAt: new Date() };
+  }
+  window.SIPData = { idFrom, configId, paramId, editUrl, loadAll, crossChecks };
+})();
+</script>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>IMB9 SIP placement</h1>
+      <p class="sub">Data &amp; sharing · for the Placement Committee</p>
+    </div>
+    <div class="statusbar"><span id="status" class="pill" data-kind="muted">Starting…</span></div>
+    <div class="head-actions">
+      <button type="button" id="btn-refresh" class="btn">Check again</button>
+      <a id="nav-dash" class="btn" href="index.html" target="_blank" rel="noopener">View dashboard</a>
+    </div>
+  </header>
+  <div class="steps">
+    <section class="card step" aria-labelledby="s1">
+      <h2 id="s1"><span class="num">1</span>Link the Google Sheet</h2>
+      <ol class="how">
+        <li>Download the <a href="IMB9_SIP_Google_Sheet_Template.xlsx" download>Google Sheet template</a>, upload it to Google Drive, open it and choose File → Save as Google Sheets.</li>
+        <li>In the Sheet, click Share. Set General access to <b>Anyone with the link → Viewer</b>, and add the teammates who enter data by email as <b>Editors</b>.</li>
+        <li>Paste the Sheet’s link here and click Connect.</li>
+      </ol>
+      <form id="sheet-form" class="inline-form" novalidate>
+        <label for="sheet-url">Google Sheet link<input id="sheet-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/…/edit" autocomplete="off"></label>
+        <button type="submit" class="btn primary">Connect</button>
+      </form>
+      <p id="sheet-err" class="err-line" aria-live="polite"></p>
+    </section>
+
+    <div id="connected" hidden>
+      <section class="card step" aria-labelledby="s2">
+        <h2 id="s2"><span class="num">2</span>Share the dashboard</h2>
+        <p class="muted">Send this link to anyone. They see the dashboard only: no sign-in and no way to edit.</p>
+        <p id="local-warning" class="warn-line" hidden>You opened this page from your computer, so this link only works on your computer. Put the folder online (Netlify or GitHub Pages), open Data &amp; sharing from there, and copy the link again.</p>
+        <div class="copy-row"><input id="share-url" type="text" readonly aria-label="Dashboard link"><button type="button" id="copy" class="btn primary">Copy link</button><a id="open-dash" class="btn" href="index.html" target="_blank" rel="noopener">Open</a></div>
+        <details class="sub-details">
+          <summary>Optional: make the plain site address open the dashboard</summary>
+          <div id="config-offer">
+            <p>Download config.js and upload it next to index.html, replacing the old one. After that the site’s plain address opens the dashboard, without “?sheet=…” at the end.</p>
+            <p><button type="button" id="btn-config" class="btn small">Download config.js</button></p>
+          </div>
+          <p id="config-done" class="ok-line" hidden>This Sheet is already set in config.js, so the plain site address opens the dashboard.</p>
+          <p id="config-other" class="warn-line" hidden>config.js is set to a different Google Sheet. The dashboard keeps showing that Sheet until you replace config.js.</p>
+        </details>
+      </section>
+
+      <section class="card step" aria-labelledby="s3">
+        <h2 id="s3"><span class="num">3</span>Enter and check the data</h2>
+        <p class="muted">Data is entered in the Google Sheet. Only people added there as Editors can change it; the dashboard picks changes up within five minutes, or straight away on Refresh.</p>
+        <div class="row-actions"><a id="open-sheet" class="btn primary" href="#" target="_blank" rel="noopener">Open the Google Sheet</a></div>
+        <h3>What the dashboard is reading</h3>
+        <ul id="tab-list" class="tab-list"></ul>
+        <h3>Data checks <span id="check-count" class="muted"></span></h3>
+        <div id="check-list"></div>
+      </section>
+    </div>
+
+    <section class="card step prose" aria-labelledby="s4">
+      <h2 id="s4">Where the data is stored</h2>
+      <p>Everything lives in the committee’s Google Sheet in Google Drive. These pages store nothing: they read the Sheet whenever someone opens them and every five minutes after that. In the Sheet, File → Version history shows every change and can undo one.</p>
+      <p>Anyone with the dashboard link can also read the Sheet. Use coded student IDs (S001, S002…) and keep the list matching codes to students in a separate private file.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const D = window.SIPData;
+  const STORE_KEY = 'imb9-sip-sheet';
+  const $ = (s) => document.querySelector(s);
+  const h = (tag, attrs, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v; else e.setAttribute(k, v);
+    }
+    kids.flat().forEach((c) => { if (c != null && c !== false) e.append(c instanceof Node ? c : String(c)); });
+    return e;
+  };
+  const time = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const stored = () => { try { return localStorage.getItem(STORE_KEY); } catch (e) { return null; } };
+  const remember = (v) => { try { localStorage.setItem(STORE_KEY, v); } catch (e) { /* not available: the page still works */ } };
+
+  let id = D.configId() || D.paramId() || D.idFrom(stored());
+  let busy = false;
+
+  function setStatus(text, kind) { const p = $('#status'); p.textContent = text; p.dataset.kind = kind; }
+  function dashboardUrl(sheet) {
+    const u = new URL('index.html', location.href);
+    u.search = ''; u.hash = '';
+    if (D.configId() !== sheet) u.searchParams.set('sheet', sheet);
+    return u.href;
+  }
+  function renderTabs(tabs) {
+    $('#tab-list').replaceChildren(...tabs.map((t) => h('li', { class: t.read ? '' : 'bad' },
+      h('b', { text: t.title }), ': ',
+      t.read ? `${t.rows.toLocaleString('en-IN')} row${t.rows === 1 ? '' : 's'} counted` + (t.problems ? `, ${t.problems} to fix` : '') : `couldn’t be read. Keep the tab name exactly “${t.title}”.`)));
+  }
+  function renderChecks(issues) {
+    const all = issues.concat(D.crossChecks());
+    const box = $('#check-list');
+    $('#check-count').textContent = all.length ? `${all.length} to fix` : '';
+    if (!all.length) { box.replaceChildren(h('p', { class: 'ok-line', text: 'No problems found in the Google Sheet.' })); return; }
+    const parts = [h('ul', { class: 'issues' }, all.slice(0, 120).map((p) => h('li', {}, h('b', { text: p.sheet + (p.line ? `, row ${p.line}` : '') }), ': ' + p.text)))];
+    if (all.length > 120) parts.push(h('p', { class: 'muted', text: `…and ${all.length - 120} more.` }));
+    box.replaceChildren(...parts);
+  }
+  function renderConnected(r) {
+    $('#connected').hidden = false;
+    $('#sheet-url').value = D.editUrl(id);
+    $('#open-sheet').href = D.editUrl(id);
+    const link = dashboardUrl(id);
+    $('#share-url').value = link;
+    $('#open-dash').href = link;
+    $('#nav-dash').href = link;
+    $('#local-warning').hidden = location.protocol !== 'file:';
+    const cfg = D.configId();
+    $('#config-done').hidden = cfg !== id;
+    $('#config-offer').hidden = cfg === id;
+    $('#config-other').hidden = !cfg || cfg === id;
+    renderTabs(r.tabs);
+    renderChecks(r.issues);
+  }
+  async function connect(sheet, fromForm) {
+    if (busy) return;
+    busy = true;
+    const btn = $('#sheet-form button');
+    btn.disabled = true; $('#btn-refresh').disabled = true;
+    setStatus('Reading the Google Sheet…', 'muted');
+    $('#sheet-err').textContent = '';
+    const r = await D.loadAll(sheet);
+    busy = false; btn.disabled = false; $('#btn-refresh').disabled = false;
+    if (!r.ok) {
+      const msg = 'Couldn’t read that Google Sheet. In the Sheet, click Share and set General access to “Anyone with the link”, Viewer. Then click Connect again.';
+      $('#sheet-err').textContent = msg;
+      setStatus(fromForm ? 'Not connected' : 'Couldn’t read the Google Sheet', 'bad');
+      return;
+    }
+    id = sheet;
+    remember(sheet);
+    setStatus(`Connected · read at ${time(r.loadedAt)}`, r.fails.length ? 'warn' : 'ok');
+    renderConnected(r);
+  }
+
+  $('#sheet-form').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const sheet = D.idFrom($('#sheet-url').value);
+    if (!sheet) { $('#sheet-err').textContent = 'That doesn’t look like a Google Sheet link. Copy it from the address bar of the open Sheet.'; return; }
+    connect(sheet, true);
+  });
+  $('#btn-refresh').addEventListener('click', () => { if (id) connect(id); });
+  $('#copy').addEventListener('click', async () => {
+    const btn = $('#copy');
+    try { await navigator.clipboard.writeText($('#share-url').value); btn.textContent = 'Copied'; }
+    catch (e) { $('#share-url').select(); btn.textContent = 'Press Ctrl+C to copy'; }
+    setTimeout(() => { btn.textContent = 'Copy link'; }, 2500);
+  });
+  $('#btn-config').addEventListener('click', () => {
+    if (!id) return;
+    const text = `/* Which Google Sheet the IMB9 SIP dashboard reads. Replace this file to switch Sheets. */\nwindow.SIP_CONFIG = { sheet: '${id}' };\n`;
+    const a = h('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/javascript' })), download: 'config.js' });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+
+  if (id) { $('#sheet-url').value = D.editUrl(id); connect(id); }
+  else setStatus('Not connected yet', 'muted');
+})();
+
+</script>
+</body>
+</html>
